@@ -1,0 +1,27 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}{{ produkt.nazwa_produktu }}{% endblock %}
+
+{% block content %}
+    <h1>{{ produkt.nazwa_produktu }}</h1>
+
+    <p><strong>Cena:</strong> {{ produkt.cena_produktu }} zł</p>
+    <p><strong>Stan magazynowy:</strong> {{ produkt.stan_magazynowy }}</p>
+
+    {% if produkt.obrazek %}
+        <img src="{{ produkt.obrazek.url }}" alt="{{ produkt.nazwa_produktu }}" class="img-fluid">
+    {% endif %}
+
+    {% if produkt.opis %}
+        <h2>Opis</h2>
+        <p>{{ produkt.opis }}</p>
+    {% endif %}
+
+    {% if produkt.stan_magazynowy > 0 %}
+        <p style="color: green;">Produkt dostępny</p>
+    {% else %}
+        <p style="color: red;">Produkt niedostępny</p>
+    {% endif %}
+
+    <p><a href="{% url 'lista_produktow' %}">← Powrót do listy</a></p>
+{% endblock %}

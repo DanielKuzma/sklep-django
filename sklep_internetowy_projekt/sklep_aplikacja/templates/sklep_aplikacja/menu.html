@@ -1,0 +1,22 @@
+<nav>
+    <a href="{% url 'strona_glowna' %}">Strona główna</a> |
+    <a href="{% url 'lista_produktow' %}">Produkty</a> |
+    {% comment "" %}
+    {% if user.is_authenticated %}
+        <a href="{% url 'historia_zamowien' %}">Moje zamówienia</a> |
+        {% if user.profiluzytkownika.rola == "pracownik" %}
+            <a href="{% url 'panel_pracownika' %}">Panel pracownika</a> |
+        {% endif %}
+        Zalogowany jako: <strong>{{ user.username }}</strong> |
+        <form method="post" action="{% url 'logout' %}" style="display: inline">
+            {% csrf_token %}
+            <button type="submit">Wyloguj</button>
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}">Zaloguj się</a>
+    {% endif %}
+    {% endcomment %}
+    
+    {# Link do koszyka dorzucimy w lekcji 11.6, gdy zarejestrujemy URL o nazwie 'koszyk'. #}
+    {# Wstawienie {% url 'koszyk' %} przed lekcją 11.6 spowoduje błąd NoReverseMatch. #}
+</nav>
