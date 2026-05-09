@@ -1,0 +1,13 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Zmień status zamówienia #{{ zamowienie.pk }}{% endblock %}
+
+{% block content %}
+  <h1>Zmień status zamówienia #{{ zamowienie.pk }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ formularz.as_p }}
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+  </form>
+{% endblock %}

@@ -9,23 +9,25 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import sys
 from pathlib import Path
+from decouple import config, Csv
+from django.contrib.messages import constants as message_constants
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v_q6qms=@^$-dud*4z$l#oi2j-q$%for(+95**l_dqj193j-f5'
+SECRET_KEY = config("DJANGO_SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="", cast=Csv())
 
 
 # Application definition
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "axes",
 ]
 
 MIDDLEWARE = [
@@ -49,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = 'sklep_internetowy_projekt.urls'
@@ -77,12 +81,15 @@ WSGI_APPLICATION = 'sklep_internetowy_projekt.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -102,6 +109,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+AXES_FAILURE_LIMIT = 5              # 5 nieudanych prób...
+AXES_COOLOFF_TIME = 1               # ...blokuje na 1 godzinę
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]  # blokujemy IP+login
+AXES_RESET_ON_SUCCESS = True        # udane logowanie kasuje licznik
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -118,17 +134,75 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = "upload"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATIC_URL = "static/"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True  # <- włącz dopiero, gdy świadomie chcesz dodać domenę
+                                  #    do listy preload (decyzja na lata, trudna do cofnięcia).
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Polityka ciasteczek i nagłówków HTTP
+if not DEBUG:
+    # === Ciasteczka ===
+    SESSION_COOKIE_SECURE = True          # cookie sesji TYLKO przez HTTPS
+    SESSION_COOKIE_HTTPONLY = True        # JS nie ma dostępu do cookie sesji (chroni przed XSS)
+    SESSION_COOKIE_SAMESITE = "Lax"       # cookie nie wysyła się przy cross-site POST (chroni przed CSRF)
+
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True           # token CSRF czytamy tylko ze szablonu, nie z JS
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+    # === Nagłówki HTTP ===
+    SECURE_REFERRER_POLICY = "same-origin"        # nie wycieka URL przy linkach na zewnątrz
+    SECURE_CONTENT_TYPE_NOSNIFF = True            # przeglądarka nie zgaduje typu MIME
+    X_FRAME_OPTIONS = "DENY"                      # blokuje <iframe> ze stroną sklepu (clickjacking)
+
+    # === Hasła ===
+    AUTH_PASSWORD_VALIDATORS = [
+        {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+        {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+         "OPTIONS": {"min_length": 10}},                # 10 znaków minimum, nie 8
+        {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+        {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    ]
+
+LOGIN_REDIRECT_URL = "strona_glowna"
+LOGOUT_REDIRECT_URL = "strona_glowna"
+LOGIN_URL = "login"
+
+MESSAGE_TAGS = {
+    message_constants.ERROR: "danger",
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "sklep@example.com"
+EMAIL_PRACOWNIKOW = ["zamowienia@example.com"]  # lista – łatwo dodać kolejne osoby
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1209600  # 2 tygodnie
+
+
+
+
+# Jeśli w terminalu uruchomiono komendę "test", podmień bazę na SQLite
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'test_db.sqlite3',
+    }

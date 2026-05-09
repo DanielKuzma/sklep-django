@@ -1,0 +1,42 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Zamówienie #{{ zamowienie.id }}{% endblock %}
+
+{% block content %}
+    <h1>Zamówienie #{{ zamowienie.id }}</h1>
+
+    <p><strong>Data:</strong> {{ zamowienie.data_zamowienia|date:"d.m.Y H:i" }}</p>
+    <p><strong>Status:</strong> {{ zamowienie.get_status_display }}</p>
+    <p><strong>Adres dostawy:</strong> {{ zamowienie.adres_dostawy }}</p>
+
+    <h2>Pozycje</h2>
+    <table class="table">
+        <caption class="visually-hidden">Pozycje zamówienia #{{ zamowienie.id }}</caption>
+        <thead>
+            <tr>
+                <th scope="col">Produkt</th>
+                <th scope="col">Ilość</th>
+                <th scope="col">Cena jednostkowa</th>
+                <th scope="col">Suma</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pozycje %}
+                <tr>
+                    <th scope="row">{{ p.produkt.nazwa_produktu }}</th>
+                    <td>{{ p.ilosc }}</td>
+                    <td>{{ p.cena_jednostkowa }} zł</td>
+                    <td>{{ p.suma }} zł</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th scope="row" colspan="3">Razem</th>
+                <td><strong>{{ zamowienie.wartosc_zamowienia }} zł</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p><a href="{% url 'historia_zamowien' %}">← Powrót do historii zamówień</a></p>
+{% endblock %}

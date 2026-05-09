@@ -1,0 +1,49 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Mój profil{% endblock %}
+
+{% block content %}
+  <h1>Mój profil</h1>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Dane kontaktowe</h5>
+      <p>{{ user.first_name }} {{ user.last_name }}</p>
+      <p>E-mail: {{ user.email }}</p>
+      <p>Telefon: {{ klient.telefon }}</p>
+      <p>Adres: {{ klient.ulica }}, {{ klient.kod_pocztowy }} {{ klient.miasto }}</p>
+    </div>
+  </div>
+
+  <h2>Moje zamówienia</h2>
+  {% if zamowienia %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Numer</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Wartość</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for z in zamowienia %}
+          <tr>
+            <td>#{{ z.pk }}</td>
+            <td>{{ z.data_zamowienia|date:"Y-m-d H:i" }}</td>
+            <td>{{ z.get_status_display }}</td>
+            <td>{{ z.wartosc_zamowienia }} zł</td>
+            <td>
+              <a href="{% url 'szczegoly_zamowienia' z.pk %}" class="btn btn-sm btn-outline-primary">
+                Szczegóły
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nie masz jeszcze żadnych zamówień.</p>
+  {% endif %}
+{% endblock %}

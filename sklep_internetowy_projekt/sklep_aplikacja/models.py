@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
+from django.utils.text import slugify
 
 
 class ProfilUzytkownika(models.Model):
@@ -28,9 +29,23 @@ class Klient(models.Model):
     def __str__(self):
         return f"{self.uzytkownik.first_name} {self.uzytkownik.last_name}"
 
+class Kategoria(models.Model):
+    nazwa = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.nazwa
 
 class Produkt(models.Model):
     nazwa_produktu = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=180, unique=True, blank=True)
+    kategoria = models.ForeignKey(
+        Kategoria,
+        on_delete=models.PROTECT,
+        related_name="produkty",
+        null=True,
+        blank=True,
+    )
     opis = models.TextField(blank=True)
     cena_produktu = models.DecimalField(
         max_digits=10,
@@ -39,11 +54,12 @@ class Produkt(models.Model):
     )
     stan_magazynowy = models.PositiveIntegerField(default=0)
     czy_aktywny = models.BooleanField(default=True)
-    data_dodania = models.DateTimeField(auto_now_add=True, null=True)  # nowe pole
-    obrazek = models.ImageField(upload_to="produkty/", blank=True, null=True)
 
-    def czy_dostepny(self):
-        return self.czy_aktywny and self.stan_magazynowy > 0
+    def save(self, *args, **kwargs):
+        # Jeżeli przy zapisie slug jest pusty, generujemy go z nazwy.
+        if not self.slug:
+            self.slug = slugify(self.nazwa_produktu)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nazwa_produktu
@@ -90,3 +106,4 @@ class PozycjaZamowienia(models.Model):
 
     def __str__(self):
         return f"{self.produkt.nazwa_produktu} x {self.ilosc}"
+    

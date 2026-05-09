@@ -6,7 +6,7 @@
     <h1 class="mb-4">Lista produktów</h1>
 
     <div class="row g-3">
-        {% for produkt in produkty %}
+        {% for produkt in page_obj %}
             <div class="col-md-4 col-lg-3">
                 <div class="card h-100">
                     <div class="card-body">
@@ -15,7 +15,7 @@
                         <p class="card-text"><strong>{{ produkt.cena_produktu }} zł</strong></p>
                     </div>
                     <div class="card-footer bg-white border-0">
-                        <a href="{% url 'szczegoly_produktu' produkt.id %}" class="btn btn-primary btn-sm">Szczegóły</a>
+                        <a href="{% url 'szczegoly_produktu' produkt.slug %}" class="btn btn-primary btn-sm">{{ produkt.nazwa_produktu }}</a>
                     </div>
                 </div>
             </div>

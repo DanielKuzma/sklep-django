@@ -1,0 +1,9 @@
+{% if messages %}
+  <div class="container">
+    {% for komunikat in messages %}
+      <div class="alert alert-{{ komunikat.tags|default:'info' }}">
+        {{ komunikat }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

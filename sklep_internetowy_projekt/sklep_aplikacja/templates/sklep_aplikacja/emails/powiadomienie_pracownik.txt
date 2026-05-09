@@ -1,0 +1,10 @@
+Nowe zamówienie #{{ zamowienie.pk }}
+
+Klient: {{ zamowienie.klient.uzytkownik.first_name }} {{ zamowienie.klient.uzytkownik.last_name }} ({{ zamowienie.klient.uzytkownik.email }})
+Wartość: {{ zamowienie.wartosc_zamowienia }} zł
+Adres dostawy: {{ zamowienie.adres_dostawy }}
+
+Pozycje:
+{% for p in pozycje %}- {{ p.produkt.nazwa_produktu }} × {{ p.ilosc }} = {{ p.suma }} zł
+{% endfor %}
+Otwórz w panelu pracownika: {{ zamowienie.pk }}
