@@ -1,0 +1,23 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Strona Główna
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    <p>Witamy strona głowna</p>
+    <ul>
+
+        <li>
+            <a href = "/admin">Panel Administratora</a>
+        </li>
+
+        <li>
+            <a href = "#">Przejdź do aukcji</a>
+        </li>
+
+    </ul>
+{% endblock main %}
