@@ -1,0 +1,23 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}Login Site{% endblock title %}
+
+{% block main %}
+    
+    {% if form.errors %}
+        <p class="text-danger">Niepoprawny login lub hasło.</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="exampleInputEmail1" class="form-label">Login</label>
+        <input type="username", name = "username" id="exampleInputEmail1">
+
+        <label for="exampleInputPassword1" class="form-label">Hasło</label>
+        <input type="password" name = "password" id="exampleInputPassword1">
+        <button type="submit">Zatwierdzi</button>
+        <p>Jeżeli nie posiadasz konta <a href = "/sing-up">kliknij tutaj<a> aby je założyć</p>
+    </form>
+{% endblock main %}

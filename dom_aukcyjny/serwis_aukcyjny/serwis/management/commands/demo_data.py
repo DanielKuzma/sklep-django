@@ -1,123 +1,166 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.db import transaction # Dodany import transakcji
+from serwis.models import (
+    ProfilUzytkownika, Adres, Uzytkownik, Kategoria, Aukcja, Oferta, Platnosc
+)
+from datetime import timedelta, date
 from django.utils import timezone
-from datetime import timedelta
-# UWAGA: Zamień 'serwis' na nazwę Twojej aplikacji, jeśli jest inna!
-from serwis.models import ProfilUzytkowniak, Adres, Uzytkownik, Kategoria, Aukcja, Oferta, Platnosc 
 
 class Command(BaseCommand):
-    help = "Ładuje sensowne, rozbudowane dane testowe do serwisu aukcyjnego"
+    help = "Ładuje logiczne dane demonstracyjne dla portalu aukcyjnego"
 
     def handle(self, *args, **options):
-        self.stdout.write("Czyszczenie starych danych (jeśli jakieś zostały)...")
-        Oferta.objects.all().delete()
-        Platnosc.objects.all().delete()
-        Aukcja.objects.all().delete()
-        Kategoria.objects.all().delete()
-        Uzytkownik.objects.all().delete()
-        Adres.objects.all().delete()
-        ProfilUzytkowniak.objects.all().delete()
-        User.objects.exclude(is_superuser=True).delete() # Zostawiamy tylko admina
+        # 1. Zabezpieczenie przed dublowaniem danych
+        if Aukcja.objects.exists():
+            self.stdout.write(self.style.WARNING(
+                "Pomijam – w bazie są już dane. "
+                "Wpisz w konsoli 'python manage.py flush', aby wyczyścić bazę przed wgraniem demo."
+            ))
+            return
 
-        self.stdout.write("1. Tworzenie użytkowników i adresów...")
-        # Hasło dla wszystkich to: testowe123
-        dane_ludzi = [
-            ("jan_sprzedawca", "jan@aukcje.pl", "Jan", "Kowalski", "111222333", "Warszawa"),
-            ("ania_biznes", "ania@aukcje.pl", "Anna", "Nowak", "444555666", "Kraków"),
-            ("tomek_kupiec", "tomek@aukcje.pl", "Tomasz", "Wójcik", "777888999", "Poznań"),
-            ("kasia_lowca", "kasia@aukcje.pl", "Katarzyna", "Lis", "123123123", "Gdańsk"),
-            ("piotrek_licytator", "piotr@aukcje.pl", "Piotr", "Zając", "321321321", "Wrocław"),
-        ]
-
-        uzytkownicy = {}
-        for username, email, imie, nazwisko, tel, miasto in dane_ludzi:
-            # Tworzymy systemowego usera
-            user = User.objects.create_user(username=username, email=email, password="testowe123", first_name=imie, last_name=nazwisko)
+        # 2. Blok transakcji - chroni przed zapisaniem "połowy" danych w razie błędu
+        with transaction.atomic():
+            self.stdout.write("1. Tworzenie użytkowników i ich adresów...")
             
-            # Tworzymy profil
-            rola = "Pracownik" if "sprzedawca" in username else "Klient"
-            ProfilUzytkowniak.objects.create(uzytkownik=user, rola=rola)
+            uzytkownicy_data = [
+                # username, email, imie, nazwisko, tel, rola, kraj, miasto, ulica, kod, bud, lok
+                ("jan.kowalski", "jan@example.com", "Jan", "Kowalski", "500100200", 
+                 "Klient", "Polska", "Warszawa", "Kwiatowa", "00-001", "12", None),
+                
+                ("anna.nowak", "anna@example.com", "Anna", "Nowak", "501200300", 
+                 "Klient", "Polska", "Kraków", "Leśna", "30-002", "5", "14"),
+                
+                ("piotr.wisniewski", "piotr@example.com", "Piotr", "Wiśniewski", "502300400", 
+                 "Klient", "Polska", "Poznań", "Słoneczna", "60-003", "8", None),
+                
+                ("admin_sklepu", "admin@sklep.pl", "Ewa", "Kaczmarek", "500000000", 
+                 "Pracownik", "Polska", "Wrocław", "Biurowa", "50-000", "1", "1"),
+            ]
+
+            for username, email, imie, nazwisko, tel, rola, kraj, miasto, ulica, kod, budynek, lokal in uzytkownicy_data:
+                user, created = User.objects.get_or_create(
+                    username=username,
+                    defaults={"email": email, "first_name": imie, "last_name": nazwisko},
+                )
+                if created:
+                    user.set_password("Demo1234!") # Wspólne hasło
+                    if rola == "Pracownik":
+                        user.is_staff = True
+                        user.is_superuser = True # Pełen dostęp dla admina
+                    user.save()
+
+                # POPRAWKA: uzytkownik=user (zgodnie z Twoim modes.py)
+                ProfilUzytkownika.objects.get_or_create(uzytkownik=user, defaults={"rola": rola})
+
+                adres, _ = Adres.objects.get_or_create(
+                    kraj=kraj, miasto=miasto, ulica=ulica, kod_pocztowy=kod, 
+                    numer_budynku=budynek, numer_lokalu=lokal
+                )
+
+                Uzytkownik.objects.get_or_create(
+                    uzytkownik=user,
+                    defaults={"adres": adres, "telefon": tel, "data_rejestracji": date.today()}
+                )
+
+            self.stdout.write("2. Tworzenie kategorii...")
+            kategorie_nazwy = ["Elektronika", "Motoryzacja", "Dom i Ogród", "Kolekcje", "Moda", "Sport"]
+            for nazwa in kategorie_nazwy:
+                Kategoria.objects.get_or_create(nazwa=nazwa)
+
+            self.stdout.write("3. Tworzenie logicznych aukcji...")
             
-            # Tworzymy adres
-            adres = Adres.objects.create(ulica="Główna", numer_budynku="1", kod_pocztowy="00-000", miasto=miasto, kraj="Polska")
+            def get_uzytkownik_model(username):
+                return Uzytkownik.objects.get(uzytkownik__username=username)
+
+            def get_user_model(username):
+                return User.objects.get(username=username)
+
+            def get_kategoria(nazwa):
+                return Kategoria.objects.get(nazwa=nazwa)
+
+            za_tydzien = date.today() + timedelta(days=7)
+            wczoraj = date.today() - timedelta(days=1)
+
+            aukcje_data = [
+                # Jan sprzedaje:
+                ("jan.kowalski", "Elektronika", "Laptop gamingowy 15 cali", 2500.0, za_tydzien, "Aktywny"),
+                ("jan.kowalski", "Motoryzacja", "Opony letnie 16", 400.0, za_tydzien, "Aktywny"),
+                
+                # Anna sprzedaje:
+                ("anna.nowak", "Dom i Ogród", "Zestaw mebli ogrodowych", 800.0, wczoraj, "Zakonczone"),
+                ("anna.nowak", "Moda", "Kurtka skórzana męska L", 150.0, za_tydzien, "Aktywny"),
+                
+                # Piotr sprzedaje:
+                ("piotr.wisniewski", "Kolekcje", "Złota moneta 1 uncja", 8000.0, za_tydzien, "Aktywny"),
+                ("piotr.wisniewski", "Sport", "Rower górski KROSS", 1200.0, wczoraj, "Zakonczone"),
+            ]
+
+            for sprzedajacy_username, kat_nazwa, nazwa, cena, data_zak, status in aukcje_data:
+                Aukcja.objects.get_or_create(
+                    nazwa_produktu=nazwa,
+                    defaults={
+                        "sprzedajacy": get_uzytkownik_model(sprzedajacy_username),
+                        "kategoria": get_kategoria(kat_nazwa),
+                        "cena_wywolawcza": cena,
+                        "data_zakonczenia": data_zak,
+                        "status": status,
+                        "opis": f"Opis wygenerowany dla: {nazwa}. Świetny produkt!",
+                    }
+                )
+
+            self.stdout.write("4. Symulacja licytacji (Oferty rosnące)...")
             
-            # Tworzymy profil rozszerzony (Twój model Uzytkownik)
-            uzytkownicy[username] = Uzytkownik.objects.create(uzytkownik=user, adres=adres, nazwa_uzytkownika=username, telefon=tel)
+            oferty_data = [
+                # Aukcja Jana -> Licytuje Anna i Piotr
+                ("Laptop gamingowy 15 cali", "anna.nowak", 2600.0),
+                ("Laptop gamingowy 15 cali", "piotr.wisniewski", 2750.0),
 
-        self.stdout.write("2. Tworzenie kategorii...")
-        kat_elektronika = Kategoria.objects.create(nazwa="Elektronika")
-        kat_motoryzacja = Kategoria.objects.create(nazwa="Motoryzacja")
-        kat_dom = Kategoria.objects.create(nazwa="Dom i Ogród")
-        kat_sport = Kategoria.objects.create(nazwa="Sport i Rekreacja")
+                # Aukcja Jana -> Licytuje tylko Piotr
+                ("Opony letnie 16", "piotr.wisniewski", 450.0),
 
-        self.stdout.write("3. Tworzenie aukcji...")
-        dzisiaj = timezone.now().date()
-        
-        aukcje = {
-            # AKTYWNE AUKCJE
-            "laptop": Aukcja.objects.create(
-                sprzedajacy=uzytkownicy["jan_sprzedawca"], kategoria=kat_elektronika,
-                nazwa_produktu="MacBook Pro M1 (Stan Idealny)", cena_wywolawcza=3000.0,
-                data_zakonczenia=dzisiaj + timedelta(days=5), opis="Świetny laptop do pracy.", status="Aktywny"
-            ),
-            "rower": Aukcja.objects.create(
-                sprzedajacy=uzytkownicy["ania_biznes"], kategoria=kat_sport,
-                nazwa_produktu="Rower Górski Kross", cena_wywolawcza=800.0,
-                data_zakonczenia=dzisiaj + timedelta(days=2), opis="Rower używany, gotowy do jazdy.", status="Aktywny"
-            ),
-            "kosiarka": Aukcja.objects.create(
-                sprzedajacy=uzytkownicy["ania_biznes"], kategoria=kat_dom,
-                nazwa_produktu="Kosiarka Spalinowa Nowa", cena_wywolawcza=450.0,
-                data_zakonczenia=dzisiaj + timedelta(days=7), opis="Oryginalnie zapakowana.", status="Aktywny"
-            ),
-            # ZAKOŃCZONE AUKCJE
-            "opony": Aukcja.objects.create(
-                sprzedajacy=uzytkownicy["jan_sprzedawca"], kategoria=kat_motoryzacja,
-                nazwa_produktu="Komplet opon zimowych 16'", cena_wywolawcza=500.0,
-                data_zakonczenia=dzisiaj - timedelta(days=3), opis="Bieżnik 6mm.", status="Zakonczone"
-            ),
-            "konsola": Aukcja.objects.create(
-                sprzedajacy=uzytkownicy["jan_sprzedawca"], kategoria=kat_elektronika,
-                nazwa_produktu="PlayStation 5 z padem", cena_wywolawcza=1800.0,
-                data_zakonczenia=dzisiaj - timedelta(days=1), opis="Mało używana.", status="Zakonczone"
-            ),
-        }
+                # Aukcja Anny (ZAKOŃCZONA) -> Licytuje Jan i Piotr, Jan wygrywa
+                ("Zestaw mebli ogrodowych", "jan.kowalski", 850.0),
+                ("Zestaw mebli ogrodowych", "piotr.wisniewski", 900.0),
+                ("Zestaw mebli ogrodowych", "jan.kowalski", 950.0), 
 
-        # Generujemy slug dla każdej aukcji
-        for aukcja in aukcje.values():
-            aukcja.save()
+                # Aukcja Piotra -> Licytuje Jan i Anna
+                ("Złota moneta 1 uncja", "jan.kowalski", 8100.0),
+                ("Złota moneta 1 uncja", "anna.nowak", 8200.0),
 
-        self.stdout.write("4. Generowanie historii ofert (wojny licytacyjne)...")
-        # MacBook (Aktywna) - zacięta walka Tomka i Kasi
-        Oferta.objects.create(aukcja=aukcje["laptop"], kupujacy=uzytkownicy["tomek_kupiec"], oferowana_cena=3100.0)
-        Oferta.objects.create(aukcja=aukcje["laptop"], kupujacy=uzytkownicy["kasia_lowca"], oferowana_cena=3300.0)
-        Oferta.objects.create(aukcja=aukcje["laptop"], kupujacy=uzytkownicy["tomek_kupiec"], oferowana_cena=3550.0)
+                # Aukcja Piotra (ZAKOŃCZONA) -> Licytuje Anna
+                ("Rower górski KROSS", "anna.nowak", 1300.0), 
+            ]
 
-        # Rower (Aktywna) - jedna oferta
-        Oferta.objects.create(aukcja=aukcje["rower"], kupujacy=uzytkownicy["piotrek_licytator"], oferowana_cena=850.0)
+            for aukcja_nazwa, kupujacy_username, kwota in oferty_data:
+                aukcja = Aukcja.objects.get(nazwa_produktu=aukcja_nazwa)
+                kupujacy_user = get_user_model(kupujacy_username) 
+                
+                # Tworzymy ofertę używając obiektu, by zadziałał clean()
+                oferta = Oferta(aukcja=aukcja, kupujacy=kupujacy_user, oferowana_cena=kwota)
+                oferta.clean() # Uruchamia Twoją walidację ceny!
+                oferta.save()
 
-        # Kosiarka - BRAK OFERT (żebyś miał jak testować puste aukcje)
+            self.stdout.write("5. Generowanie płatności dla zakończonych aukcji...")
 
-        # Opony (Zakończona) - wygrał Piotrek
-        Oferta.objects.create(aukcja=aukcje["opony"], kupujacy=uzytkownicy["tomek_kupiec"], oferowana_cena=550.0)
-        Oferta.objects.create(aukcja=aukcje["opony"], kupujacy=uzytkownicy["piotrek_licytator"], oferowana_cena=600.0)
+            platnosci_data = [
+                # Zestaw mebli (wygrany przez Jana za 950 u Anny)
+                ("Zestaw mebli ogrodowych", "jan.kowalski", "Zaplacone", 950.0, "Karta"),
+                
+                # Rower (wygrany przez Annę za 1300 u Piotra)
+                ("Rower górski KROSS", "anna.nowak", "Nie Zaplacone", 1300.0, "Gotowka"),
+            ]
 
-        # Konsola (Zakończona) - wygrała Kasia
-        Oferta.objects.create(aukcja=aukcje["konsola"], kupujacy=uzytkownicy["kasia_lowca"], oferowana_cena=1950.0)
+            for aukcja_nazwa, platnik_username, status, kwota, metoda in platnosci_data:
+                aukcja = Aukcja.objects.get(nazwa_produktu=aukcja_nazwa)
+                platnik = get_uzytkownik_model(platnik_username)
+                
+                Platnosc.objects.create(
+                    aukcja=aukcja,
+                    platnik=platnik,
+                    status_platnosci=status,
+                    cena_koncowa=kwota,
+                    metoda_platnosc=metoda
+                )
 
-        self.stdout.write("5. Księgowanie płatności dla zakończonych aukcji...")
-        # Piotrek nie zapłacił jeszcze za opony
-        Platnosc.objects.create(
-            aukcja=aukcje["opony"], platnik=uzytkownicy["piotrek_licytator"], 
-            status_platnosci="Nie Zaplacone", cena_koncowa=600.0, metoda_platnosc="Gotowka"
-        )
-        
-        # Kasia zapłaciła za konsolę
-        Platnosc.objects.create(
-            aukcja=aukcje["konsola"], platnik=uzytkownicy["kasia_lowca"], 
-            status_platnosci="Zaplacone", cena_koncowa=1950.0, metoda_platnosc="Karta"
-        )
-
-        self.stdout.write(self.style.SUCCESS("Gotowe! Wgrano doskonały zestaw danych do pracy i testów."))
-        self.stdout.write("Loginy: jan_sprzedawca, ania_biznes, tomek_kupiec, kasia_lowca, piotrek_licytator")
-        self.stdout.write("Hasło dla wszystkich to: testowe123")
+            self.stdout.write(self.style.SUCCESS("Gotowe! Dane są spójne i w 100% gotowe do testowania widoków."))

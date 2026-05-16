@@ -303,3 +303,5 @@ def wyloguj(request):
     request.session["koszyk"] = koszyk_zapisany
     request.session.modified = True
     return redirect("strona_glowna")
+
+

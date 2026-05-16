@@ -1,0 +1,56 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    {{auction_detail.nazwa_produktu}}
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    <h1>{{auction_detail.nazwa_produktu}}</h1>    
+    </p>sprzedajacy : {{ auction_detail.sprzedajacy }}</p>
+    
+    {% if auction_detail.kategoria == None %}
+        </p>kategoria : Brak</p>
+    {% else %}
+        </p>kategoria : {{ auction_detail.kategoria }}</p>
+    {% endif %}
+        <img src="{{auction_detail.image.url}}" alt="{{auction_detail.nazwa_produktu}}" width="300" height="300">
+    </p>opis : {{ auction_detail.opis }}</p>
+    </p>Cena początkowa : {{ auction_detail.cena_wywolawcza }}</p>
+    </p>Aktualna cena: {{ last_offer }}</p>
+
+  
+    </p>Data początka aukcji {{ auction_detail.data_wystawienia }}</p>
+    </p>Data planowanego konica aukcji {{ auction_detail.data_zakonczenia }}</p>
+
+    {% if is_end and is_wining == user.username %}
+        <p>GRATULACJE wygrałeś aukcje wkrótce zostanie wystawiony rachunek </p>
+    {% else %}        
+        
+    {% if auction_detail.sprzedajacy.uzytkownik != user %}
+            
+            {% if is_wining == user.username %}
+                <h3>Jestes na prowadzeniu</h3>
+            {% else %}
+                <p>Spodobał ci sie produkt lub ktoś podbił twoją oferte?</p>
+                <p>Złóż oferte wieksza niz {{last_offer}} i wysuń sie na prowadzenie</p>
+                <form method = "POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Złóż oferte" />
+                </form>
+
+                {% endif %}
+
+        {% endif %}
+
+    {% endif %}
+
+
+
+
+
+
+{% endblock main %}

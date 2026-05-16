@@ -1,0 +1,26 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Wszystkie Aukcje
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    <h1>Aukcje w których bierzesz udział</h1>
+
+
+    <ul>
+        {% for x in my_biddings %}
+            <li>
+                <a href = {% url "action_detail" x.slug %}>
+                    <p>{{x.nazwa_produktu}}</p>
+                    <img src="{{x.image.url}}" alt="{{x.nazwa_produktu}}" width="200" height="200">
+                    <p>Aukcja trwa od: {{x.data_wystawienia}} do {{x.data_zakonczenia}}</p>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock main %}

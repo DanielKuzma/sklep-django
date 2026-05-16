@@ -1,0 +1,64 @@
+{% extends 'basic.html' %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Rachunki i płatności 
+{% endblock title %}
+
+{% block main %}
+{% include "serwis/include/nav.html" %}
+<h2>Moje Rachunki i Płatności</h2>
+<p>Lista wygranych przez Ciebie aukcji oraz statusy wygenerowanych rachunków.</p>
+
+{% if invoices %}
+    <table>
+        <thead>
+            <tr>
+                <th>Przedmiot</th>
+                <th>Kwota do zapłaty</th>
+                <th>Metoda płatności</th>
+                <th>Status</th>
+                <th>Działanie</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+                <tr>
+                    <td>{{ invoice.aukcja.nazwa_produktu }}</td>
+                    <td>{{ invoice.cena_koncowa }} zł</td>
+                    <td>
+                        {% if invoice.metoda_platnosc %}
+                            {{ invoice.metoda_platnosc }}
+                        {% else %}
+                            <span>Nie wybrano</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if invoice.status_platnosci == 'Zaplacone' %}
+                            <span>Opłacone</span>
+                        {% elif invoice.status_platnosci == 'Nie Zaplacone' %}
+                            {% if invoice.metoda_platnosc %}
+                                <span>Oczekuje na weryfikację pracownika</span>
+                            {% else %}
+                                <span>Wymaga opłacenia</span>
+                            {% endif %}
+                        {% else %}
+                            <span>{{ invoice.status_platnosci }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if invoice.status_platnosci == 'Nie Zaplacone' and not invoice.metoda_platnosc %}
+                            <a href="{% url 'client_pay_invoice' invoice.id %}"><button>Opłać rachunek</button></a>
+                        {% else %}
+                            <button disabled>Brak akcji</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nie masz jeszcze żadnych rachunków do opłacenia. Licytuj dalej!</p>
+{% endif %}
+{% endblock main %}

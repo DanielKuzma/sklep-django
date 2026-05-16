@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import ProfilUzytkowniak, Adres, Uzytkownik, Kategoria, Aukcja, Oferta, Platnosc
+from .models import ProfilUzytkownika, Adres, Uzytkownik, Kategoria, Aukcja, Oferta, Platnosc
 # Register your models here.
 
-@admin.register(ProfilUzytkowniak)
-class ProfilUzytkowniakAdmin(admin.ModelAdmin):
+@admin.register(ProfilUzytkownika)
+class ProfilUzytkownikaAdmin(admin.ModelAdmin):
     list_display = ("uzytkownik", "rola")
     list_editable = ["rola"]
     list_filter = ["rola"]
@@ -15,8 +15,8 @@ class AdresAdmin(admin.ModelAdmin):
 
 @admin.register(Uzytkownik)
 class UzytkownikAdmin(admin.ModelAdmin):
-    list_display = ["nazwa_uzytkownika"]
-    search_fields = ["nazwa_uzytkownika"]
+    list_display = ["uzytkownik"]
+    search_fields = ["uzytkownik"]
     readonly_fields = ["data_rejestracji"]
 
 @admin.register(Kategoria)

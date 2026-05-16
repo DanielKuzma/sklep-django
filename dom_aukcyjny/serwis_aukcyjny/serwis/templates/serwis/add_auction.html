@@ -1,0 +1,18 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Wszystkie Aukcje
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    <h1>Dodawanie Aukcji</h1>
+    <form method = "POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type = "submit">Dodaj Aukcje</button>
+    </form>
+
+{% endblock main %}

@@ -1,0 +1,47 @@
+{% extends 'basic.html' %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Lista aktywnych aukcji dla pracownika do zamkniecia
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+<h2>Panel Pracownika: Aukcje do zamknięcia</h2>
+<p>Lista aktywnych aukcji, których data zakończenia już minęła. Kliknij "Wystaw rachunek", aby zamknąć aukcję i rozliczyć najwyższą ofertę.</p>
+
+{% if auctions %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa produktu</th>
+                <th>Sprzedający</th>
+                <th>Data zakończenia</th>
+                <th>Cena wywoławcza</th>
+                <th>Akcja</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for auction in auctions %}
+                <tr>
+                    <td>{{ auction.nazwa_produktu }}</td>
+                    <td>{{ auction.sprzedajacy }}</td>
+                    <td>{{ auction.data_zakonczenia }}</td>
+                    <td>{{ auction.cena_wywolawcza }} zł</td>
+                    <td>
+                        <form method="POST" action="{% url 'staff_issue_invoice' auction.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Wystaw rachunek</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aktualnie nie ma żadnych aukcji wymagających ręcznego zamknięcia.</p>
+{% endif %}
+
+{% endblock main %}

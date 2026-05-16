@@ -1,0 +1,28 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Mój Profil
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    <h1>Witaj na swoim profilu, {{ user.first_name }}!</h1>
+
+    <p><strong>Twój login:</strong> {{ user.username }}</p>
+    <p><strong>Twój email:</strong> {{ user.email }}</p>
+
+    <p><strong>Data rejestracji:</strong> {{ user.uzytkownik.data_rejestracji }}</p>
+    <p><strong>Telefon:</strong> {{ user.uzytkownik.telefon }}</p>
+
+    <h3>Twój Adres:</h3>
+    <p>
+        {{ user.uzytkownik.adres.ulica }} {{ user.uzytkownik.adres.numer_budynku }} 
+        {% if user.uzytkownik.adres.numer_lokalu %}
+            / {{ user.uzytkownik.adres.numer_lokalu }}
+        {% endif %}<br>
+        {{ user.uzytkownik.adres.kod_pocztowy }} {{ user.uzytkownik.adres.miasto }}<br>
+        {{ user.uzytkownik.adres.kraj }}
+    </p>
+{% endblock main %}

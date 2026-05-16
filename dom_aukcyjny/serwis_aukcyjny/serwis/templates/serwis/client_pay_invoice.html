@@ -1,0 +1,33 @@
+{% extends 'basic.html' %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Szczegóły płatności
+{% endblock title %}
+
+
+{% block main %}
+{% include "serwis/include/nav.html" %}
+<h3>Wybierz metodę płatności</h3>
+<p>Finalizujesz zakup przedmiotu: <strong>{{ object.aukcja.nazwa_produktu }}</strong></p>
+<p>Do zapłaty: <strong>{{ object.cena_koncowa }} zł</strong></p>
+
+<form method="POST">
+    {% csrf_token %}
+    
+    <label for="id_metoda_platnosc">Metoda płatności:</label>
+    <select name="metoda_platnosc" id="id_metoda_platnosc">
+        {% for value, text in form.fields.metoda_platnosc.choices %}
+            {% if value %}
+                <option value="{{ value }}">{{ text }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    
+    <br><br>
+    
+    <button type="submit">Potwierdzam i płacę</button>
+    <a href="{% url 'client_invoices' %}">Anuluj</a>
+</form>
+{% endblock main %}
