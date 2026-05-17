@@ -7,58 +7,69 @@
 {% endblock title %}
 
 {% block main %}
-{% include "serwis/include/nav.html" %}
-<h2>Moje Rachunki i Płatności</h2>
-<p>Lista wygranych przez Ciebie aukcji oraz statusy wygenerowanych rachunków.</p>
+    {% include "serwis/include/nav.html" %}
+    
+    <main class="main-content container">
+        <header class="page-header">
+            <h1 class="page-title">Moje Rachunki i Płatności</h1>
+            <p class="page-description">Lista wygranych przez Ciebie aukcji oraz statusy wygenerowanych rachunków.</p>
+        </header>
 
-{% if invoices %}
-    <table>
-        <thead>
-            <tr>
-                <th>Przedmiot</th>
-                <th>Kwota do zapłaty</th>
-                <th>Metoda płatności</th>
-                <th>Status</th>
-                <th>Działanie</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invoice in invoices %}
-                <tr>
-                    <td>{{ invoice.aukcja.nazwa_produktu }}</td>
-                    <td>{{ invoice.cena_koncowa }} zł</td>
-                    <td>
-                        {% if invoice.metoda_platnosc %}
-                            {{ invoice.metoda_platnosc }}
-                        {% else %}
-                            <span>Nie wybrano</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if invoice.status_platnosci == 'Zaplacone' %}
-                            <span>Opłacone</span>
-                        {% elif invoice.status_platnosci == 'Nie Zaplacone' %}
-                            {% if invoice.metoda_platnosc %}
-                                <span>Oczekuje na weryfikację pracownika</span>
-                            {% else %}
-                                <span>Wymaga opłacenia</span>
-                            {% endif %}
-                        {% else %}
-                            <span>{{ invoice.status_platnosci }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if invoice.status_platnosci == 'Nie Zaplacone' and not invoice.metoda_platnosc %}
-                            <a href="{% url 'client_pay_invoice' invoice.id %}"><button>Opłać rachunek</button></a>
-                        {% else %}
-                            <button disabled>Brak akcji</button>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>Nie masz jeszcze żadnych rachunków do opłacenia. Licytuj dalej!</p>
-{% endif %}
+        <section class="invoices-section">
+            {% if invoices %}
+                <div class="table-responsive">
+                    <table class="custom-table invoices-table">
+                        <thead>
+                            <tr>
+                                <th>Przedmiot</th>
+                                <th>Kwota do zapłaty</th>
+                                <th>Metoda płatności</th>
+                                <th>Status</th>
+                                <th>Działanie</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                                <tr class="table-row">
+                                    <td class="table-cell font-medium">{{ invoice.aukcja.nazwa_produktu }}</td>
+                                    <td class="table-cell price-highlight">{{ invoice.cena_koncowa }} zł</td>
+                                    <td class="table-cell">
+                                        {% if invoice.metoda_platnosc %}
+                                            {{ invoice.metoda_platnosc }}
+                                        {% else %}
+                                            <span class="text-muted">Nie wybrano</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {% if invoice.status_platnosci == 'Zaplacone' %}
+                                            <span class="status-badge status-success">Opłacone</span>
+                                        {% elif invoice.status_platnosci == 'Nie Zaplacone' %}
+                                            {% if invoice.metoda_platnosc %}
+                                                <span class="status-badge status-warning">Oczekuje na weryfikację</span>
+                                            {% else %}
+                                                <span class="status-badge status-danger">Wymaga opłacenia</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="status-badge status-default">{{ invoice.status_platnosci }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell action-cell">
+                                        {% if invoice.status_platnosci == 'Nie Zaplacone' and not invoice.metoda_platnosc %}
+                                            <a href="{% url 'client_pay_invoice' invoice.id %}" class="btn btn-primary btn-sm">Opłać rachunek</a>
+                                        {% else %}
+                                            <button disabled class="btn btn-disabled btn-sm">Brak akcji</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info empty-state">
+                    <p>Nie masz jeszcze żadnych rachunków do opłacenia. Licytuj dalej!</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
 {% endblock main %}

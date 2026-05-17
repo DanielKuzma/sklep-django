@@ -1,6 +1,8 @@
 {% extends "basic.html" %}
-
-{% block css %}{% endblock css %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'serwis/profile.css' %}">
+{% endblock css %}
 
 {% block title %}
     Mój Profil
@@ -8,21 +10,53 @@
 
 {% block main %}
     {% include "serwis/include/nav.html" %}
-    <h1>Witaj na swoim profilu, {{ user.first_name }}!</h1>
+    
+    <main class="main-content container">
+        <header class="page-header">
+            <h1 class="page-title">Witaj na swoim profilu, {{ user.first_name }}!</h1>
+        </header>
 
-    <p><strong>Twój login:</strong> {{ user.username }}</p>
-    <p><strong>Twój email:</strong> {{ user.email }}</p>
+        <div class="profile-layout">
+            <!-- Pierwsza karta: Dane podstawowe -->
+            <section class="profile-section info-card">
+                <h2 class="section-subtitle">Dane konta</h2>
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="info-label">Twój login:</span> 
+                        <span class="info-value">{{ user.username }}</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">Twój email:</span> 
+                        <span class="info-value">{{ user.email }}</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">Data rejestracji:</span> 
+                        <span class="info-value">{{ user.uzytkownik.data_rejestracji }}</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">Telefon:</span> 
+                        <span class="info-value">{{ user.uzytkownik.telefon }}</span>
+                    </li>
+                </ul>
+            </section>
 
-    <p><strong>Data rejestracji:</strong> {{ user.uzytkownik.data_rejestracji }}</p>
-    <p><strong>Telefon:</strong> {{ user.uzytkownik.telefon }}</p>
-
-    <h3>Twój Adres:</h3>
-    <p>
-        {{ user.uzytkownik.adres.ulica }} {{ user.uzytkownik.adres.numer_budynku }} 
-        {% if user.uzytkownik.adres.numer_lokalu %}
-            / {{ user.uzytkownik.adres.numer_lokalu }}
-        {% endif %}<br>
-        {{ user.uzytkownik.adres.kod_pocztowy }} {{ user.uzytkownik.adres.miasto }}<br>
-        {{ user.uzytkownik.adres.kraj }}
-    </p>
+            <!-- Druga karta: Adres -->
+            <section class="profile-section info-card">
+                <!-- Zamiana h3 na h2 dla równej hierarchii sekcji -->
+                <h2 class="section-subtitle">Twój Adres</h2>
+                
+                <!-- Użycie semantycznego tagu address -->
+                <address class="address-details">
+                    <p>
+                        {{ user.uzytkownik.adres.ulica }} {{ user.uzytkownik.adres.numer_budynku }} 
+                        {% if user.uzytkownik.adres.numer_lokalu %}
+                            / {{ user.uzytkownik.adres.numer_lokalu }}
+                        {% endif %}<br>
+                        {{ user.uzytkownik.adres.kod_pocztowy }} {{ user.uzytkownik.adres.miasto }}<br>
+                        {{ user.uzytkownik.adres.kraj }}
+                    </p>
+                </address>
+            </section>
+        </div>
+    </main>
 {% endblock main %}

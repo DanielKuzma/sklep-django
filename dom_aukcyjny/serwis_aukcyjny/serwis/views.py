@@ -137,7 +137,7 @@ class ClientPayInvoice(LoginRequiredMixin, UpdateView):
 
 class StaffRequiredMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.profiluzytkownika.rola == "Pracownik" or self.request.user.is_superuser 
+        return self.request.user.is_superuser or  self.request.user.profiluzytkownika.rola == "Pracownik"
 
 class StaffAuctionsToClose(StaffRequiredMixin, ListView):
     model = Aukcja

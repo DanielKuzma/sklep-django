@@ -1,6 +1,8 @@
 {% extends "basic.html" %}
 
-{% block css %}{% endblock css %}
+{% block css %}
+
+{% endblock css %}
 
 {% block title %}
     Wszystkie Aukcje
@@ -8,11 +10,24 @@
 
 {% block main %}
     {% include "serwis/include/nav.html" %}
-    <h1>Dodawanie Aukcji</h1>
-    <form method = "POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{form.as_p}}
-        <button type = "submit">Dodaj Aukcje</button>
-    </form>
+    
+    <main class="main-content container">
+        <header class="page-header">
+            <h1 class="page-title">Dodawanie Aukcji</h1>
+        </header>
 
+        <section class="form-section">
+            <form method="POST" enctype="multipart/form-data" class="custom-form">
+                {% csrf_token %}
+                
+                <div class="form-body">
+                    {{form.as_p}}
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Dodaj Aukcje</button>
+                </div>
+            </form>
+        </section>
+    </main>
 {% endblock main %}

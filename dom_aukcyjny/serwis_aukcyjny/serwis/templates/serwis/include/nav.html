@@ -1,51 +1,46 @@
-
-<nav>
-    <ul>
-
+<nav class="main-nav">
+    <ul class="nav-list container">
         
         {% if user.is_superuser or user.is_authenticated and user.profiluzytkownika.rola == "Pracownik" %}
-            <li><a href="{% url 'staff_auctions' %}">Panel Pracownika: Aukcje do zamknięcia</a></li>
-            <li><a href="{% url 'staff_payments' %}">Panel Pracownika: Oczekujące wpłaty</a></li>
+            <li class="nav-item"><a href="{% url 'staff_auctions' %}" class="nav-link">Panel Pracownika: Aukcje do zamknięcia</a></li>
+            <li class="nav-item"><a href="{% url 'staff_payments' %}" class="nav-link">Panel Pracownika: Oczekujące wpłaty</a></li>
         {% endif %}
         
         {% if user.is_superuser or user.is_authenticated and user.profiluzytkownika.rola == "Klient" %}
-            <li><a href="{% url 'client_invoices' %}">Moje Rachunki</a></li>
-            <li><a href="{% url "my_profile" %}" >Mój Profil</a></li>
-            <li><a href="{% url "my_offers" %}">Moje Aukcje</a></li>
-            <li><a href="{% url "my_biddings" %}">Aukcje w których licytuje</a></li>
-            <li><a href="{% url "add_auction" %}">Dodaj Aukcje</a></li>
-            <li><a href="{% url "auction_list" %}">Wszystkie Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'client_invoices' %}" class="nav-link">Moje Rachunki</a></li>
+            <li class="nav-item"><a href="{% url 'my_profile' %}" class="nav-link">Mój Profil</a></li>
+            <li class="nav-item"><a href="{% url 'my_offers' %}" class="nav-link">Moje Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'my_biddings' %}" class="nav-link">Aukcje w których licytuje</a></li>
+            <li class="nav-item"><a href="{% url 'add_auction' %}" class="nav-link">Dodaj Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'auction_list' %}" class="nav-link">Wszystkie Aukcje</a></li>
         {% endif %}
         
         {% if not user.is_authenticated %}
-            <li><a href="{% url "auction_list" %}">Wszystkie Aukcje</a></li>
-            <li><a href="{% url "add_auction" %}">Dodaj Aukcje</a></li>
-            <li><a href="{% url "my_profile" %}" >Mój Profil</a></li>
-            <li><a href="{% url "my_offers" %}">Moje Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'auction_list' %}" class="nav-link">Wszystkie Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'add_auction' %}" class="nav-link">Dodaj Aukcje</a></li>
+            <li class="nav-item"><a href="{% url 'my_profile' %}" class="nav-link">Mój Profil</a></li>
+            <li class="nav-item"><a href="{% url 'my_offers' %}" class="nav-link">Moje Aukcje</a></li>
         {% endif %}
         
-        <li>
+            <li class="nav-item"><a href="{% url 'starting_page' %}" class="nav-link">Strona Główna</a></li>
 
-            {% if user.is_authenticated %}
-            
-                <li >
-                    <span>
-                        Zalogowany: {{ user.username }}
-                    </span>
-                </li>
-
-                <li >
-                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+        {% if user.is_authenticated %}
+            <li class="nav-item ms-auto">
+                <span class="nav-text">
+                    Zalogowany: <strong>{{ user.username }}</strong>
+                </span>
+            </li>
+            <li class="nav-item">
+                <form method="post" action="{% url 'logout' %}" class="nav-form">
                     {% csrf_token %}
-                    <button type="submit">Wyloguj</button>
-                    </form>
-                </li>
-            {% else %}
-                <li >
-                    <a  href="{% url 'login' %}">Zaloguj się</a>
-                </li>
-            {% endif %}
+                    <button type="submit" class="btn btn-secondary btn-sm">Wyloguj</button>
+                </form>
+            </li>
+        {% else %}
+            <li class="nav-item ms-auto">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Zaloguj się</a>
+            </li>
+        {% endif %}
 
-        </li>
     </ul>
 </nav>
