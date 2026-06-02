@@ -63,7 +63,7 @@ Struktura Projektu
 ## Instalacja i Uruchomienie
 
 1. Zainstaluj wymagane pakiety
-  ```pip install -r requirements.txt``1
+  ```pip install -r requirements.txt```
 2. Wykonaj migracje bazy danych
    ```python manage.py makemigrations```
    ```python manage.py migrate```
@@ -75,7 +75,9 @@ Struktura Projektu
    ```http://127.0.0.1:8000/```
 ---
 
-## Projekt zawiera wbudowany zestaw testów jednostkowych i integracyjnych sprawdzających kluczową logikę biznesową (generowanie slugów, walidację stawek, automatyczne wystawianie rachunków oraz zabezpieczenia widoków).
+## Testy
+Projekt zawiera wbudowany zestaw testów jednostkowych i integracyjnych sprawdzających kluczową logikę biznesową (generowanie slugów, walidację stawek, automatyczne wystawianie rachunków oraz zabezpieczenia widoków).
+
 1. Uruchomienie testów:
 ```python manage.py test```
 
