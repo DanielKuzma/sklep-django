@@ -105,7 +105,7 @@ class Command(BaseCommand):
                         "status": status,
                         "opis": f"Opis wygenerowany dla: {nazwa}. Świetny produkt!",
                         # UWAGA: Jeżeli Twoje pole w modelu Aukcja nazywa się inaczej niż "zdjecie" (np. "obrazek", "miniaturka"), zmień poniższy klucz:
-                        "zdjecie": foto, 
+                        "image": foto, 
                     }
                 )
 
