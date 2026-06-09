@@ -1,0 +1,52 @@
+{% extends "basic.html" %}
+
+{% block css %}{% endblock css %}
+
+{% block title %}
+    Strona Główna - Serwis Aukcyjny
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    
+    <main class="main-content container">
+        <header class="page-header text-center" style="text-align: center; margin-bottom: 40px;">
+            <h1 class="page-title" style="font-size: 2.5rem; margin-bottom: 15px;">Witamy w naszym Serwisie Aukcyjnym!</h1>
+            <p class="page-description" style="font-size: 1.2rem; max-width: 800px; margin: 0 auto;">
+                Znajdź unikalne przedmioty, licytuj z innymi i wygrywaj niesamowite okazje. A może masz coś na sprzedaż? Dołącz do naszej społeczności i zacznij zarabiać już dziś.
+            </p>
+        </header>
+
+        <section class="welcome-content-section" style="margin-bottom: 40px;">
+            <div class="info-card alert alert-info" style="text-align: center; padding: 30px;">
+                <h2 class="section-subtitle" style="color: var(--text-color); margin-bottom: 15px;">Dlaczego warto z nami licytować?</h2>
+                <p style="margin-bottom: 0;">
+                    Nasza platforma zapewnia bezpieczeństwo transakcji, przejrzyste zasady licytacji oraz stały kontakt ze sprzedającymi. 
+                    Niezależnie od tego, czy jesteś zapalonym kolekcjonerem, czy po prostu szukasz dobrej okazji – jesteś we właściwym miejscu!
+                </p>
+            </div>
+        </section>
+
+        <section class="quick-links-section" style="text-align: center;">
+            <h3 class="section-subtitle" style="margin-bottom: 20px;">Rozpocznij swoją przygodę:</h3>
+            
+            <ul class="quick-links-list" style="list-style: none; padding: 0; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                <li class="quick-links-item">
+                    <a href="{% url 'auction_list' %}" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">Przeglądaj Aukcje</a>
+                </li>
+                
+                <li class="quick-links-item">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'login' %}" class="btn btn-success" style="padding: 15px 30px; font-size: 1.1rem;">Zaloguj się i licytuj</a>
+                    {% else %}
+                        <a href="{% url 'add_auction' %}" class="btn btn-success" style="padding: 15px 30px; font-size: 1.1rem;">Wystaw Przedmiot</a>
+                    {% endif %}
+                </li>
+
+                <li class="quick-links-item">
+                    <a href="/admin" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">Panel Administratora</a>
+                </li>
+            </ul>
+        </section>
+    </main>
+{% endblock main %}

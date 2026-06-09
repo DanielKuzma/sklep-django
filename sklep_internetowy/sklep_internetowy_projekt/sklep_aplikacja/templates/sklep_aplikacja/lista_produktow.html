@@ -1,0 +1,26 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Produkty{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Lista produktów</h1>
+
+    <div class="row g-3">
+        {% for produkt in page_obj %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ produkt.nazwa_produktu }}</h5>
+                        <p class="card-text">{{ produkt.opis|truncatechars:80 }}</p>
+                        <p class="card-text"><strong>{{ produkt.cena_produktu }} zł</strong></p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a href="{% url 'szczegoly_produktu' produkt.slug %}" class="btn btn-primary btn-sm">{{ produkt.nazwa_produktu }}</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Brak produktów.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

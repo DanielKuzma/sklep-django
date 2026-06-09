@@ -1,0 +1,40 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Moje zamówienia{% endblock %}
+
+{% block content %}
+    <h1>Moje zamówienia</h1>
+
+    {% if zamowienia %}
+        <table class="table table-striped">
+            <caption class="visually-hidden">Lista Twoich zamówień</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Numer</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Wartość</th>
+                    <th scope="col"><span class="visually-hidden">Akcje</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for z in zamowienia %}
+                    <tr>
+                        <th scope="row">#{{ z.id }}</th>
+                        <td>{{ z.data_zamowienia|date:"d.m.Y H:i" }}</td>
+                        <td>{{ z.get_status_display }}</td>
+                        <td>{{ z.wartosc_zamowienia }} zł</td>
+                        <td>
+                            <a href="{% url 'szczegoly_zamowienia' z.id %}">
+                                Szczegóły <span class="visually-hidden">zamówienia #{{ z.id }}</span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nie masz jeszcze żadnych zamówień.</p>
+        <p><a href="{% url 'lista_produktow' %}">Zobacz produkty →</a></p>
+    {% endif %}
+{% endblock %}

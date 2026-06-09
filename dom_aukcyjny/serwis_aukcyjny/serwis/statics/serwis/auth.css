@@ -1,0 +1,28 @@
+/* =========================================
+   FORMULARZE LOGOWANIA I REJESTRACJI
+   ========================================= */
+.auth-container {
+    max-width: 500px;
+    margin-top: 50px;
+}
+
+.auth-form {
+    padding: 30px;
+}
+
+.auth-form .form-actions button {
+    width: 100%; /* Rozciąga przycisk na całą szerokość */
+    padding: 12px;
+    font-size: 1.1rem;
+}
+
+.form-footer {
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+    margin-top: 20px;
+}
+
+.text-link {
+    font-weight: 600;
+}

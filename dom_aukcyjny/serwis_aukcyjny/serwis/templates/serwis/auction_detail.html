@@ -1,0 +1,91 @@
+{% extends "basic.html" %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static "serwis/auctions.css" %}">
+{% endblock css %}
+
+{% block title %}
+    {{auction_detail.nazwa_produktu}}
+{% endblock title %}
+
+{% block main %}
+    {% include "serwis/include/nav.html" %}
+    
+    <main class="main-content container">
+        <header class="page-header">
+            <h1 class="page-title">{{auction_detail.nazwa_produktu}}</h1>
+        </header>
+
+        <article class="product-detail-layout">
+            <div class="product-image-col">
+                <div class="image-wrapper">
+                    <img src="{{auction_detail.image.url}}" alt="{{auction_detail.nazwa_produktu}}" class="product-image" width="300" height="300">
+                </div>
+            </div>
+
+            <div class="product-info-col">
+                <section class="product-info-section">
+                    <p class="meta-item"><span class="meta-label">Sprzedający:</span> {{ auction_detail.sprzedajacy }}</p>
+                    
+                    <p class="meta-item"><span class="meta-label">Kategoria:</span> 
+                    {% if auction_detail.kategoria == None %}
+                        Brak
+                    {% else %}
+                        {{ auction_detail.kategoria }}
+                    {% endif %}
+                    </p>
+
+                    <div class="product-description">
+                        <h3 class="section-subtitle">Opis:</h3>
+                        <p>{{ auction_detail.opis }}</p>
+                    </div>
+                </section>
+
+                <section class="product-pricing-section">
+                    <p class="meta-item"><span class="meta-label">Cena początkowa:</span> {{ auction_detail.cena_wywolawcza }}</p>
+                    <p class="meta-item price-highlight"><span class="meta-label">Aktualna cena:</span> <strong>{{ last_offer }}</strong></p>
+                </section>
+
+                <section class="product-dates-section">
+                    <p class="meta-item"><span class="meta-label">Data początku aukcji:</span> {{ auction_detail.data_wystawienia }}</p>
+                    <p class="meta-item"><span class="meta-label">Data planowanego końca aukcji:</span> {{ auction_detail.data_zakonczenia }}</p>
+                </section>
+
+                <section class="product-actions-section">
+                    {% if is_end and is_wining == user.username %}
+                        <div class="alert alert-success">
+                            <p><strong>GRATULACJE!</strong> Wygrałeś aukcję, wkrótce zostanie wystawiony rachunek.</p>
+                        </div>
+                    {% else %}        
+                        {% if auction_detail.sprzedajacy.uzytkownik != user %}
+                            
+                            {% if is_wining == user.username %}
+                                <div class="alert alert-info">
+                                    <h3>Jesteś na prowadzeniu!</h3>
+                                </div>
+                            {% else %}
+                                <div class="bidding-prompt">
+                                    <p>Spodobał ci się produkt lub ktoś podbił twoją ofertę?</p>
+                                    <p>Złóż ofertę większą niż <strong>{{last_offer}}</strong> i wysuń się na prowadzenie!</p>
+                                </div>
+                                
+                                <!-- Zastosowanie tych samych klas formularza co w dodawaniu aukcji -->
+                                <form method="POST" class="custom-form bidding-form">
+                                    {% csrf_token %}
+                                    <div class="form-body">
+                                        {{ form.as_p }}
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">Złóż ofertę</button>
+                                    </div>
+                                </form>
+                            {% endif %}
+                            
+                        {% endif %}
+                    {% endif %}
+                </section>
+            </div>
+        </article>
+    </main>
+{% endblock main %}

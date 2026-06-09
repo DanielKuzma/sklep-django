@@ -1,0 +1,13 @@
+{% extends "sklep_aplikacja/bazowy.html" %}
+
+{% block title %}Rejestracja{% endblock %}
+
+{% block content %}
+  <h1>Załóż konto</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Zarejestruj</button>
+  </form>
+  <p class="mt-3">Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a>.</p>
+{% endblock %}
